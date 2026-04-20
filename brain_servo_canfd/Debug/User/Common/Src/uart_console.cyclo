@@ -1,0 +1,4 @@
+../User/Common/Src/uart_console.c:21:6:UART_Console_Init	1
+../User/Common/Src/uart_console.c:33:5:_write	6
+../User/Common/Src/uart_console.c:53:6:HAL_UART_TxCpltCallback	2
+../User/Common/Src/uart_console.c:60:6:HAL_UARTEx_RxEventCallback	4

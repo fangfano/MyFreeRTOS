@@ -1,0 +1,3 @@
+../User/Tasks/Src/user_RunModeTasks.c:25:6:IdleEnterTask	24	static
+../User/Tasks/Src/user_RunModeTasks.c:57:6:StopEnterTask	24	static
+../User/Tasks/Src/user_RunModeTasks.c:172:6:IdleTimerCallback	16	static

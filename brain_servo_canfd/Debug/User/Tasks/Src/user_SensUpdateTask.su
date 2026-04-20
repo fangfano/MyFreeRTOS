@@ -1,0 +1,3 @@
+../User/Tasks/Src/user_SensUpdateTask.c:25:6:MPUCheckTask	16	static
+../User/Tasks/Src/user_SensUpdateTask.c:68:6:HRDataUpdateTask	24	static
+../User/Tasks/Src/user_SensUpdateTask.c:107:6:SensorDataUpdateTask	24	static

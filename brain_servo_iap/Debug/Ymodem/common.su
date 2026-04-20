@@ -1,0 +1,4 @@
+../Ymodem/common.c:40:6:Int2Str	32	static
+../Ymodem/common.c:68:10:Str2Int	32	static
+../Ymodem/common.c:142:6:Serial_PutString	24	static
+../Ymodem/common.c:158:19:Serial_PutByte	16	static

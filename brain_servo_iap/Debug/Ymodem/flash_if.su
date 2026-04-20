@@ -1,0 +1,6 @@
+../Ymodem/flash_if.c:41:6:FLASH_If_Init	4	static
+../Ymodem/flash_if.c:55:10:FLASH_If_Erase	48	static,ignoring_inline_asm
+../Ymodem/flash_if.c:115:10:FLASH_If_Write	32	static,ignoring_inline_asm
+../Ymodem/flash_if.c:156:10:FLASH_If_GetWriteProtectionStatus	88	static
+../Ymodem/flash_if.c:176:17:GetSector	24	static
+../Ymodem/flash_if.c:221:19:FLASH_If_WriteProtectionConfig	176	static

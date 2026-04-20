@@ -1,0 +1,5 @@
+../Drivers/CMSIS/Include/core_cm7.h:2165:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
+../User/Tasks/Src/user_ConsoleRecvTask.c:13:6:Servo_SetPulse	16	static
+../User/Tasks/Src/user_ConsoleRecvTask.c:29:10:Servo_GetPulse	16	static
+../User/Tasks/Src/user_ConsoleRecvTask.c:35:13:ParseCommand	48	static
+../User/Tasks/Src/user_ConsoleRecvTask.c:88:6:ConsoleRecvTask	160	static

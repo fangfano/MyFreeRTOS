@@ -1,0 +1,8 @@
+../Ymodem/ymodem.c:62:26:ReceivePacket	48	static
+../Ymodem/ymodem.c:188:13:PrepareIntialPacket	48	static
+../Ymodem/ymodem.c:229:13:PreparePacket	40	static
+../Ymodem/ymodem.c:269:10:UpdateCRC16	24	static
+../Ymodem/ymodem.c:295:10:Cal_CRC16	24	static
+../Ymodem/ymodem.c:315:9:CalcChecksum	24	static
+../Ymodem/ymodem.c:334:19:Ymodem_Receive	88	static
+../Ymodem/ymodem.c:485:19:Ymodem_Transmit	64	static

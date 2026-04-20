@@ -1,0 +1,5 @@
+../Core/Src/main.c:77:5:main	9
+../Core/Src/main.c:214:6:SystemClock_Config	4
+../Core/Src/main.c:271:6:Jump_To_App	6
+../Core/Src/main.c:357:6:MPU_Config	1
+../Core/Src/main.c:388:6:Error_Handler	1

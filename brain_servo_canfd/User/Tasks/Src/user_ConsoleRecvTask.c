@@ -101,7 +101,7 @@ void ConsoleRecvTask(void *argument)
     
     // ================== 修改部分开始 ==================
     // 启动时的提示也加上当前的初始值反馈
-    printf("Servo Ready 1 2 3. CMD: S<1-4>=<500-2500> | INIT_STATUS: [S1:%d S2:%d S3:%d S4:%d]\r\n",
+    printf("Servo Ready. CMD: S<1-4>=<500-2500> | INIT_STATUS: [S1:%d S2:%d S3:%d S4:%d]\r\n",
            servo_pulse[0], servo_pulse[1], servo_pulse[2], servo_pulse[3]);
     // ================== 修改部分结束 ==================
     

@@ -57,8 +57,9 @@ enum{
 #define USER_FLASH_SIZE   (USER_FLASH_END_ADDRESS - APPLICATION_ADDRESS + 1)
 
 /* Define the address from where user application will be loaded.
-   Note: the 1st sector 0x08000000-0x0801FFFF is reserved for the IAP code */
-#define APPLICATION_ADDRESS   (uint32_t)0x08020000
+   注意：Cortex-M7 的中断向量表要求 512 字节对齐，因此从 0x08020200 开始 */
+#define SN_ADDRESS            (uint32_t)0x08020000
+#define APPLICATION_ADDRESS   (uint32_t)0x08020200
 
 /* Define bitmap representing user flash area that could be write protected (check restricted to pages 8-39). */
 #define FLASH_SECTOR_TO_BE_PROTECTED (OB_WRP_SECTOR_0 | OB_WRP_SECTOR_1 | OB_WRP_SECTOR_2 | OB_WRP_SECTOR_3 |\

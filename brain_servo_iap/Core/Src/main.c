@@ -174,6 +174,17 @@ int main(void)
 		if ((app_stack_ptr & 0x2FF00000) == 0x20000000 ||
 			(app_stack_ptr & 0x2FF00000) == 0x24000000)
 		{
+			// ================= 新增：打印当前版本号 =================
+			// 根据之前的定义，SN 码存放在 0x08020000
+			char* current_sn = (char*)0x08020000;
+			// 检查第一个字节是不是 0xFF (如果是全0xFF说明没写过SN) 或空字符
+			if ((uint8_t)current_sn[0] != 0xFF && current_sn[0] != '\0') {
+				printf("[BOOT] Current APP Version: %s\r\n", current_sn);
+			} else {
+				printf("[BOOT] Current APP Version: [Unknown/Empty]\r\n");
+			}
+			// ========================================================
+
 			printf("[BOOT] Legal APP found (Valid SP: 0x%08X), jumping...\r\n", app_stack_ptr);
 			HAL_Delay(50); // 稍微延时一下让串口把字打印完
 			Jump_To_App(); // 执行跳转

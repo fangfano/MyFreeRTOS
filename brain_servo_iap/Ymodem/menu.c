@@ -34,6 +34,8 @@
 #include "menu.h"
 #include "ymodem.h"
 
+#include <string.h>
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -50,6 +52,45 @@ void SerialUpload(void);
 /* Private functions ---------------------------------------------------------*/
 
 /**
+  * @brief  带看门狗喂狗的串口字符串接收函数 (回车结束)
+  */
+static void Serial_ReceiveString(uint8_t *p_string, uint16_t max_length)
+{
+  uint16_t length = 0;
+  uint8_t char_rx = 0;
+
+  while (length < max_length - 1)
+  {
+    HAL_IWDG_Refresh(&hiwdg1); // 🐶 等待输入时必须不断喂狗
+
+    if (HAL_UART_Receive(&UartHandle, &char_rx, 1, 10) == HAL_OK)
+    {
+      if (char_rx == '\r' || char_rx == '\n') // 按下回车键
+      {
+        if (length > 0) break; // 已经有输入内容则结束
+      }
+      else if (char_rx == '\b' || char_rx == 0x7F) // 按下退格键
+      {
+        if (length > 0)
+        {
+          length--;
+          Serial_PutByte('\b');
+          Serial_PutByte(' ');
+          Serial_PutByte('\b');
+        }
+      }
+      else if (char_rx >= 0x20 && char_rx <= 0x7E) // 限制为可见字符
+      {
+        p_string[length++] = char_rx;
+        Serial_PutByte(char_rx); // 回显到终端
+      }
+    }
+  }
+  p_string[length] = '\0'; // 补全字符串结束符
+  Serial_PutString((uint8_t *)"\r\n");
+}
+
+/**
   * @brief  Download a file via serial port
   * @param  None
   * @retval None
@@ -60,18 +101,79 @@ void SerialDownload(void)
   uint32_t size = 0;
   COM_StatusTypeDef result;
 
+  // === [新增] SN 版本号校验逻辑 ===
+  uint8_t input_sn[32] = {0};
+  uint32_t sn_buffer[8] = {0}; // STM32H7 Flash 每次写入 32 字节 (8个 uint32_t)
+
+  Serial_PutString((uint8_t *)"\r\nPlease enter the new APP version/SN code (end with Enter): ");
+  Serial_ReceiveString(input_sn, sizeof(input_sn));
+
+  if (strlen((char*)input_sn) == 0)
+  {
+	 Serial_PutString((uint8_t *)"SN code cannot be empty! Aborted.\r\n");
+	 return; // 直接返回主菜单
+  }
+
+  // 从 Flash 中读取当前的 SN 码
+  char* current_sn = (char*)SN_ADDRESS;
+
+  // 比较输入的 SN 和当前的 SN (最大比对 31 个字符)
+  if (strncmp((char*)input_sn, current_sn, 31) == 0)
+  {
+	  Serial_PutString((uint8_t *)"The SN code is identical to the current one.\r\n");
+	  Serial_PutString((uint8_t *)"Force update? (Y/N): ");
+
+	  uint8_t confirm = 0;
+	  while (1)
+	  {
+		  HAL_IWDG_Refresh(&hiwdg1); // 🐶
+		  if (HAL_UART_Receive(&UartHandle, &confirm, 1, 10) == HAL_OK)
+		  {
+			  if (confirm == 'Y' || confirm == 'y' || confirm == 'N' || confirm == 'n')
+			  {
+				  Serial_PutByte(confirm); // 回显
+				  Serial_PutString((uint8_t *)"\r\n");
+				  break;
+			  }
+		  }
+	  }
+
+	  if (confirm == 'N' || confirm == 'n')
+	  {
+		  Serial_PutString((uint8_t *)"Update aborted by user.\r\n");
+		  return; // 取消更新，返回主菜单
+	  }
+  }
+  // === 校验逻辑结束 ===
+
   Serial_PutString((uint8_t *)"Waiting for the file to be sent ... (press 'a' to abort)\n\r");
   result = Ymodem_Receive( &size );
+
   if (result == COM_OK)
   {
-    Serial_PutString((uint8_t *)"\n\n\r Programming Completed Successfully!\n\r--------------------------------\r\n Name: ");
-    Serial_PutString(aFileName);
-    Int2Str(number, size);
-    Serial_PutString((uint8_t *)"\n\r Size: ");
-    Serial_PutString(number);
-    Serial_PutString((uint8_t *)" Bytes\r\n");
-    Serial_PutString((uint8_t *)"-------------------\n");
+	// === [新增] 刷写成功后更新 SN 码 ===
+	// 此时 Sector 1 刚被 Ymodem 擦除，SN_ADDRESS 处是全 0xFF，无需再擦，直接写！
+	memcpy(sn_buffer, input_sn, strlen((char*)input_sn)); // 将字符串填入 32 字节的缓冲
+
+	if (FLASH_If_Write(SN_ADDRESS, sn_buffer, 8) != FLASHIF_OK) // 写入 8个字 (32字节)
+	{
+		Serial_PutString((uint8_t *)"Warning: Failed to write SN code to Flash!\r\n");
+	}
+	else
+	{
+		Serial_PutString((uint8_t *)"SN code updated successfully!\r\n");
+	}
+	// === 写入 SN 结束 ===
+
+	Serial_PutString((uint8_t *)"\n\n\r Programming Completed Successfully!\n\r--------------------------------\r\n Name: ");
+	Serial_PutString(aFileName);
+	Int2Str(number, size);
+	Serial_PutString((uint8_t *)"\n\r Size: ");
+	Serial_PutString(number);
+	Serial_PutString((uint8_t *)" Bytes\r\n");
+	Serial_PutString((uint8_t *)"-------------------\n");
   }
+
   else if (result == COM_LIMIT)
   {
     Serial_PutString((uint8_t *)"\n\n\rThe image size is higher than the allowed space memory!\n\r");

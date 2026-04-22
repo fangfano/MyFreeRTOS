@@ -42,7 +42,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define VECT_TAB_OFFSET  0x00020000U // 必须与 flash_if.h 中的起始地址对应
+#define VECT_TAB_OFFSET  0x00020200UL // 必须与 flash_if.h 中的起始地址对应
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/

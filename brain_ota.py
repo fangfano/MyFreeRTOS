@@ -10,9 +10,10 @@ except ImportError:
     sys.exit(1)
 
 # ================= 配置区域 =================
-COM_PORT = 'COM3'              # 串口号
+COM_PORT = 'COM4'              # 串口号
 BAUD_RATE = 115200             # 波特率
 FILE_PATH = './brain_servo_canfd/Debug/brain_servo_canfd.bin'  # 你的 APP 固件相对或绝对路径
+NEW_VERSION = "BRAIN_V1.1"    # 【新增】准备刷入的新版本号/SN码
 # ============================================
 
 def main():
@@ -70,23 +71,42 @@ def main():
                     last_tx_time = now
 
             elif state == "WAIT_MENU_END":
-                # ST 菜单的最后一行是 "============="。
-                # 看到它，或者干等 1.5 秒，确保板子的 Flush 操作已经执行完毕
                 if b"==========================================================" in buffer or (now - last_tx_time > 1.5):
                     print("\n\n>>> [状态切换] SEND_1_YMODEM : 菜单打印完毕，准备发送 '1'")
                     state = "SEND_1_YMODEM"
                     buffer = b""
-                    last_tx_time = 0 # 将时间归零，强制立即发第一次
+                    last_tx_time = 0
 
             elif state == "SEND_1_YMODEM":
-                # 每隔 1 秒发一次 '1'，直到板子确切回复 Waiting
+                # 每隔 1 秒发一次 '1'，直到板子提示输入版本号
                 if now - last_tx_time > 1:
                     ser.write(b"1")
                     last_tx_time = now
                 
-                if b"Waiting for the file" in buffer:
+                # 【新增】检测输入版本号的提示
+                if b"Please enter the new APP version/SN code" in buffer:
+                    print(f"\n\n>>> [状态切换] SEND_SN : 请求版本号，自动输入 -> {NEW_VERSION}")
+                    state = "SEND_SN"
+                    buffer = b""
+                    last_tx_time = 0
+
+            elif state == "SEND_SN":
+                # 只发送一次即可，因为此时 C 语言代码处于 while(1) 阻塞接收字符串状态
+                if last_tx_time == 0:
+                    time.sleep(0.1)
+                    ser.write((NEW_VERSION + "\r").encode('utf-8'))
+                    last_tx_time = now
+
+                # 【新增】如果版本号相同，处理强制更新询问
+                if b"Force update? (Y/N):" in buffer:
+                    print("\n\n>>> [状态处理] 版本号一致，发送 'Y' 强制更新...")
+                    ser.write(b"Y")
+                    # 清空 buffer 避免重复触发，继续等待下一条指令 (Waiting)
+                    buffer = b""
+
+                if b"Waiting for the file to be sent" in buffer:
                     print("\n\n>>> [状态切换] DO_YMODEM : 板子就绪，移交 Ymodem 协议...")
-                    time.sleep(0.5) # 给板子吐出字符 'C' 留出时间
+                    time.sleep(0.5) 
                     state = "DO_YMODEM"
                     buffer = b""
 
@@ -134,7 +154,6 @@ def main():
                     last_tx_time = now
 
             elif state == "WAIT_MENU_END_AGAIN":
-                # 再次等待底部边框，防止发送 3 的时候被吃掉
                 if b"==========================================================" in buffer or (now - last_tx_time > 2):
                     print("\n\n>>> [状态切换] SEND_3_JUMP : 发送 '3' 尝试跳转 APP")
                     state = "SEND_3_JUMP"
@@ -142,12 +161,10 @@ def main():
                     last_tx_time = 0
 
             elif state == "SEND_3_JUMP":
-                # 每隔 1 秒发一次 '3'
                 if now - last_tx_time > 1:
                     ser.write(b"3")
                     last_tx_time = now
 
-                # 根据你之前加的遗言，以及 APP 的启动提示来判断是否跳转成功
                 if b"JUMPING NOW" in buffer or b"Servo Ready" in buffer or b"Start program execution" in buffer:
                     print("\n\n>>> [状态切换] DONE : 完美！OTA 自动化流程全部闭环！🎉")
                     state = "DONE"

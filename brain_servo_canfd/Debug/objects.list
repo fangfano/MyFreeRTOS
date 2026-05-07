@@ -55,6 +55,7 @@
 "./User/Common/Src/uart_console.o"
 "./User/Tasks/Src/user_ConsoleRecvTask.o"
 "./User/Tasks/Src/user_DataSaveTask.o"
+"./User/Tasks/Src/user_FreeRTOS_Test.o"
 "./User/Tasks/Src/user_HardwareInitTask.o"
 "./User/Tasks/Src/user_KeyTask.o"
 "./User/Tasks/Src/user_RunModeTasks.o"

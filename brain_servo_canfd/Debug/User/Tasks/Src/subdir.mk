@@ -7,6 +7,7 @@
 C_SRCS += \
 ../User/Tasks/Src/user_ConsoleRecvTask.c \
 ../User/Tasks/Src/user_DataSaveTask.c \
+../User/Tasks/Src/user_FreeRTOS_Test.c \
 ../User/Tasks/Src/user_HardwareInitTask.c \
 ../User/Tasks/Src/user_KeyTask.c \
 ../User/Tasks/Src/user_RunModeTasks.c \
@@ -16,6 +17,7 @@ C_SRCS += \
 OBJS += \
 ./User/Tasks/Src/user_ConsoleRecvTask.o \
 ./User/Tasks/Src/user_DataSaveTask.o \
+./User/Tasks/Src/user_FreeRTOS_Test.o \
 ./User/Tasks/Src/user_HardwareInitTask.o \
 ./User/Tasks/Src/user_KeyTask.o \
 ./User/Tasks/Src/user_RunModeTasks.o \
@@ -25,6 +27,7 @@ OBJS += \
 C_DEPS += \
 ./User/Tasks/Src/user_ConsoleRecvTask.d \
 ./User/Tasks/Src/user_DataSaveTask.d \
+./User/Tasks/Src/user_FreeRTOS_Test.d \
 ./User/Tasks/Src/user_HardwareInitTask.d \
 ./User/Tasks/Src/user_KeyTask.d \
 ./User/Tasks/Src/user_RunModeTasks.d \
@@ -39,7 +42,7 @@ User/Tasks/Src/%.o User/Tasks/Src/%.su User/Tasks/Src/%.cyclo: ../User/Tasks/Src
 clean: clean-User-2f-Tasks-2f-Src
 
 clean-User-2f-Tasks-2f-Src:
-	-$(RM) ./User/Tasks/Src/user_ConsoleRecvTask.cyclo ./User/Tasks/Src/user_ConsoleRecvTask.d ./User/Tasks/Src/user_ConsoleRecvTask.o ./User/Tasks/Src/user_ConsoleRecvTask.su ./User/Tasks/Src/user_DataSaveTask.cyclo ./User/Tasks/Src/user_DataSaveTask.d ./User/Tasks/Src/user_DataSaveTask.o ./User/Tasks/Src/user_DataSaveTask.su ./User/Tasks/Src/user_HardwareInitTask.cyclo ./User/Tasks/Src/user_HardwareInitTask.d ./User/Tasks/Src/user_HardwareInitTask.o ./User/Tasks/Src/user_HardwareInitTask.su ./User/Tasks/Src/user_KeyTask.cyclo ./User/Tasks/Src/user_KeyTask.d ./User/Tasks/Src/user_KeyTask.o ./User/Tasks/Src/user_KeyTask.su ./User/Tasks/Src/user_RunModeTasks.cyclo ./User/Tasks/Src/user_RunModeTasks.d ./User/Tasks/Src/user_RunModeTasks.o ./User/Tasks/Src/user_RunModeTasks.su ./User/Tasks/Src/user_SensUpdateTask.cyclo ./User/Tasks/Src/user_SensUpdateTask.d ./User/Tasks/Src/user_SensUpdateTask.o ./User/Tasks/Src/user_SensUpdateTask.su ./User/Tasks/Src/user_TasksInit.cyclo ./User/Tasks/Src/user_TasksInit.d ./User/Tasks/Src/user_TasksInit.o ./User/Tasks/Src/user_TasksInit.su
+	-$(RM) ./User/Tasks/Src/user_ConsoleRecvTask.cyclo ./User/Tasks/Src/user_ConsoleRecvTask.d ./User/Tasks/Src/user_ConsoleRecvTask.o ./User/Tasks/Src/user_ConsoleRecvTask.su ./User/Tasks/Src/user_DataSaveTask.cyclo ./User/Tasks/Src/user_DataSaveTask.d ./User/Tasks/Src/user_DataSaveTask.o ./User/Tasks/Src/user_DataSaveTask.su ./User/Tasks/Src/user_FreeRTOS_Test.cyclo ./User/Tasks/Src/user_FreeRTOS_Test.d ./User/Tasks/Src/user_FreeRTOS_Test.o ./User/Tasks/Src/user_FreeRTOS_Test.su ./User/Tasks/Src/user_HardwareInitTask.cyclo ./User/Tasks/Src/user_HardwareInitTask.d ./User/Tasks/Src/user_HardwareInitTask.o ./User/Tasks/Src/user_HardwareInitTask.su ./User/Tasks/Src/user_KeyTask.cyclo ./User/Tasks/Src/user_KeyTask.d ./User/Tasks/Src/user_KeyTask.o ./User/Tasks/Src/user_KeyTask.su ./User/Tasks/Src/user_RunModeTasks.cyclo ./User/Tasks/Src/user_RunModeTasks.d ./User/Tasks/Src/user_RunModeTasks.o ./User/Tasks/Src/user_RunModeTasks.su ./User/Tasks/Src/user_SensUpdateTask.cyclo ./User/Tasks/Src/user_SensUpdateTask.d ./User/Tasks/Src/user_SensUpdateTask.o ./User/Tasks/Src/user_SensUpdateTask.su ./User/Tasks/Src/user_TasksInit.cyclo ./User/Tasks/Src/user_TasksInit.d ./User/Tasks/Src/user_TasksInit.o ./User/Tasks/Src/user_TasksInit.su
 
 .PHONY: clean-User-2f-Tasks-2f-Src
 

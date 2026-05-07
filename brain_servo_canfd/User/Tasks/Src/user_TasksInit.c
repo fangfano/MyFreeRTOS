@@ -15,6 +15,8 @@
 #include "user_SensUpdateTask.h"
 #include "user_DataSaveTask.h"
 #include "user_ConsoleRecvTask.h"
+// test demo
+#include "user_FreeRTOS_Test.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -168,6 +170,8 @@ void User_Tasks_Init(void)
   */
 	osMessageQueuePut(HomeUpdata_MessageQueue, &HomeUpdataStr, 0, 1);
 
+	// 添加测试模块的初始化
+	FreeRTOS_Test_Init();
 }
 
 
@@ -226,7 +230,7 @@ void TaskTickHook(void)
 	  // 每 500ms 切换一次位置
 	  if (direct_test_tick >= 500) {
 	      direct_test_tick = 0;
-	      HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
+//	      HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 
 	      life_count++;
 		  // 喂狗也可以放在这里

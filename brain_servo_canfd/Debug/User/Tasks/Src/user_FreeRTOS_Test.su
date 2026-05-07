@@ -1,0 +1,3 @@
+../User/Tasks/Src/user_FreeRTOS_Test.c:32:6:Test_QueueSendTask	32	static
+../User/Tasks/Src/user_FreeRTOS_Test.c:59:6:Test_QueueRecvTask	32	static
+../User/Tasks/Src/user_FreeRTOS_Test.c:76:6:FreeRTOS_Test_Init	8	static

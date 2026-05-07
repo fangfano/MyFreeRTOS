@@ -25,7 +25,7 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2550:17:uxTaskGetSystemState	4
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2677:12:xTaskCatchUpTicks	2
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:2781:12:xTaskIncrementTick	15
-../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3070:6:vTaskSwitchContext	5
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3070:6:vTaskSwitchContext	6
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3144:6:vTaskPlaceOnEventList	2
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3169:6:vTaskPlaceOnUnorderedEventList	3
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3197:10:vTaskPlaceOnEventListRestricted	3
@@ -51,6 +51,9 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4135:16:xTaskPriorityInherit	7
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4225:16:xTaskPriorityDisinherit	7
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4305:10:vTaskPriorityDisinheritAfterTimeout	10
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4474:19:prvWriteNameToBuffer	2
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4501:10:vTaskList	8
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4607:10:vTaskGetRunTimeStats	5
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4726:12:uxTaskResetEventItemValue	1
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4742:18:pvTaskIncrementMutexHeldCount	2
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4759:14:ulTaskGenericNotifyTake	6
@@ -60,4 +63,8 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5179:10:vTaskGenericNotifyGiveFromISR	10
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5268:16:xTaskGenericNotifyStateClear	4
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5302:14:ulTaskGenericNotifyValueClear	3
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5332:33:ulTaskGetRunTimeCounter	1
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5342:33:ulTaskGetRunTimePercent	2
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5369:33:ulTaskGetIdleRunTimeCounter	1
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5379:33:ulTaskGetIdleRunTimePercent	1
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5387:13:prvAddCurrentTaskToDelayedList	5

@@ -3,6 +3,8 @@
 #include "main.h"
 #include <stdarg.h>
 
+#include "task.h" // 必须包含这个，才能使用 vTaskGetRunTimeStats()
+
 /* 消息队列句柄 */
 osMessageQueueId_t Test_MessageQueue; // 消息队列
 
@@ -80,6 +82,16 @@ const osThreadAttr_t EventWaitTask_attributes = {
   .stack_size = 128 * 16,
   .priority = (osPriority_t) osPriorityNormal,
 };
+
+
+// CPU利用率测试任务
+osThreadId_t Test_CpuStatsTaskHandle;
+const osThreadAttr_t CpuStatsTask_attributes = {
+  .name = "CpuStatsTask",
+  .stack_size = 128 * 32, // 这个任务需要处理大字符串，栈给大一点 (4KB)
+  .priority = (osPriority_t) osPriorityLow, // 统计任务优先级设低一点，不抢占业务
+};
+
 /* ------------------------------------------------------------------
  * 任务函数实体
  * ------------------------------------------------------------------ */
@@ -305,6 +317,38 @@ void Test_OneShotTimer_Callback(void *argument)
     printf("\r\n>>>> [One-Shot Timer] BOOM! 5 Seconds elapsed! <<<<\r\n\r\n");
 }
 
+
+/* ==================================================================
+ * 测试任务 10：CPU 使用率统计
+ * ================================================================== */
+/**
+ * @brief CPU 统计任务：每 5 秒打印一次全局任务运行状态
+ */
+void Test_CpuStatsTask(void *argument)
+{
+    // 创建一个足够大的字符数组来接收统计信息 (每个任务大约需要 40 字节)
+    // 你的系统里目前有 10 多个任务，512 字节足够了
+    char stats_buffer[512];
+
+    while(1) {
+        osDelay(5000); // 每 5 秒统计一次
+
+        // 获取包含任务运行时间统计信息的字符串
+        vTaskGetRunTimeStats(stats_buffer);
+
+        printf("\r\n==================================================\r\n");
+        printf("           FreeRTOS CPU Run Time Stats            \r\n");
+        printf("==================================================\r\n");
+        printf("Task Name\t\tAbs Time\t%% Time\r\n");
+        printf("--------------------------------------------------\r\n");
+
+        // 直接打印生成好的字符串表单
+        printf("%s", stats_buffer);
+
+        printf("==================================================\r\n\r\n");
+    }
+}
+
 /* ------------------------------------------------------------------
  * 初始化入口
  * ------------------------------------------------------------------ */
@@ -370,7 +414,7 @@ void FreeRTOS_Test_Init(void)
 
 
 	// 软件定时器测试
-	if(0){
+	if(1){
 		/* 1. 创建周期定时器 (osTimerPeriodic) */
 		Test_PeriodicTimer = osTimerNew(Test_PeriodicTimer_Callback, osTimerPeriodic, NULL, NULL);
 
@@ -388,5 +432,9 @@ void FreeRTOS_Test_Init(void)
 		}
 	}
 
+	// CPU 统计测试，不需要使用的时候，就把1改成0即可
+	if(1){
+		Test_CpuStatsTaskHandle = osThreadNew(Test_CpuStatsTask, NULL, &CpuStatsTask_attributes);
+	}
 
 }

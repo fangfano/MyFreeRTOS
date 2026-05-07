@@ -44,6 +44,7 @@
 
 /* USER CODE BEGIN Includes */
 /* Section where include file can be added */
+#include "stm32h7xx.h" // 为CPU利用率统计新增
 /* USER CODE END Includes */
 
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
@@ -167,6 +168,23 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+// CPU利用率统计，生产环境下这个要去掉
+// 重要：生产环境中，将下面第一步和第二步的1改成0即可，FreeRTOS将忽略其他相关的CPU利用率统计的配置
+/* 1. 开启运行时间统计功能 */
+#define configGENERATE_RUN_TIME_STATS           1
+/* 2. 开启格式化输出函数 (允许使用 vTaskGetRunTimeStats) */
+#define configUSE_STATS_FORMATTING_FUNCTIONS    1
+
+/* 3. 配置高精度定时器 (使用 Cortex-M 内核自带的 DWT 周期计数器) */
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() do { \
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; \
+    DWT->CYCCNT = 0; \
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk; \
+} while(0)
+
+/* 4. 返回当前计数器的值 */
+#define portGET_RUN_TIME_COUNTER_VALUE() (DWT->CYCCNT)
+
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

@@ -26,6 +26,9 @@ extern osEventFlagsId_t   Test_EventGroup;       // 新增：事件标志组
 extern osTimerId_t        Test_PeriodicTimer;    // 周期定时器
 extern osTimerId_t        Test_OneShotTimer;     // 单次定时器
 
+/* 新增：CPU 统计任务 */
+extern osThreadId_t       Test_CpuStatsTaskHandle;
+
 /* --- 事件标志位定义 (最多 31 位可用) --- */
 #define EVENT_BIT_0  (1 << 0)  // 0x01
 #define EVENT_BIT_1  (1 << 1)  // 0x02

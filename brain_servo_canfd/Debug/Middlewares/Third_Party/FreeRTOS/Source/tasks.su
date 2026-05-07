@@ -51,6 +51,9 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4135:16:xTaskPriorityInherit	32	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4225:16:xTaskPriorityDisinherit	40	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4305:10:vTaskPriorityDisinheritAfterTimeout	48	static,ignoring_inline_asm
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4474:19:prvWriteNameToBuffer	24	static
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4501:10:vTaskList	48	static
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4607:10:vTaskGetRunTimeStats	40	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4726:12:uxTaskResetEventItemValue	16	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4742:18:pvTaskIncrementMutexHeldCount	4	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:4759:14:ulTaskGenericNotifyTake	32	static,ignoring_inline_asm
@@ -60,4 +63,8 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5179:10:vTaskGenericNotifyGiveFromISR	72	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5268:16:xTaskGenericNotifyStateClear	32	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5302:14:ulTaskGenericNotifyValueClear	40	static,ignoring_inline_asm
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5332:33:ulTaskGetRunTimeCounter	16	static
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5342:33:ulTaskGetRunTimePercent	24	static
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5369:33:ulTaskGetIdleRunTimeCounter	8	static
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5379:33:ulTaskGetIdleRunTimePercent	8	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5387:13:prvAddCurrentTaskToDelayedList	32	static

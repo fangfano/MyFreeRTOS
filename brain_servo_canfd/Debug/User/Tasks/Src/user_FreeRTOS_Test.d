@@ -49,7 +49,9 @@ User/Tasks/Src/user_FreeRTOS_Test.o: \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h \
- ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h
 C:/Fano/Projects/brain_servo/brain_servo_canfd/User/Tasks/Inc/user_FreeRTOS_Test.h:
 ../Drivers/CMSIS/RTOS2/Include/cmsis_os2.h:
 ../Core/Inc/main.h:
@@ -101,3 +103,5 @@ C:/Fano/Projects/brain_servo/brain_servo_canfd/User/Common/Inc/uart_console.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/portmacro.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/list.h:

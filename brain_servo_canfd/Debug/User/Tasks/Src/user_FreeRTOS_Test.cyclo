@@ -1,3 +1,11 @@
-../User/Tasks/Src/user_FreeRTOS_Test.c:32:6:Test_QueueSendTask	2
-../User/Tasks/Src/user_FreeRTOS_Test.c:59:6:Test_QueueRecvTask	2
-../User/Tasks/Src/user_FreeRTOS_Test.c:76:6:FreeRTOS_Test_Init	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:91:6:Test_QueueSendTask	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:118:6:Test_QueueRecvTask	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:143:6:Test_SemaGiveTask	1
+../User/Tasks/Src/user_FreeRTOS_Test.c:166:6:Test_SemaTakeTask	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:188:6:Test_MutexTaskA	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:209:6:Test_MutexTaskB	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:240:6:Test_EventSetTask	1
+../User/Tasks/Src/user_FreeRTOS_Test.c:259:6:Test_EventWaitTask	2
+../User/Tasks/Src/user_FreeRTOS_Test.c:291:6:Test_PeriodicTimer_Callback	1
+../User/Tasks/Src/user_FreeRTOS_Test.c:303:6:Test_OneShotTimer_Callback	1
+../User/Tasks/Src/user_FreeRTOS_Test.c:311:6:FreeRTOS_Test_Init	3

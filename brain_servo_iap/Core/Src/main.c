@@ -290,7 +290,7 @@ void Jump_To_App(void)
         // 1. 关闭全局中断
         __disable_irq();
 
-        printf("1\n");
+        printf("1");
 
         // 临走前狠狠喂一次狗
         extern IWDG_HandleTypeDef hiwdg1;
@@ -304,7 +304,7 @@ void Jump_To_App(void)
 		extern UART_HandleTypeDef huart1; // 根据你代码里的名字，可能是 huart1
 		HAL_UART_Abort(&huart1);
 
-        printf("2\n");
+        printf("2");
 		// 强制插入同步屏障，确保前面的关闭动作在硬件层面上彻底完成
 		// 如果有隐藏的 BusFault，也会在这里提前引爆，而不会死在 Cache 函数里
 		__DSB();
@@ -318,7 +318,7 @@ void Jump_To_App(void)
         SCB_InvalidateDCache();
         SCB->CCR &= ~(uint32_t)SCB_CCR_DC_Msk; // 强制从硬件位关闭 D-Cache
 
-        printf("3\n");
+        printf("3");
 		__DSB();
 		__ISB();
 
@@ -327,7 +327,8 @@ void Jump_To_App(void)
 
         // 4. 【最后】反初始化外设
         // 现在 Cache 已经关了，怎么关外设时钟都不会触发总线错误了
-        HAL_DeInit();
+        // 下面这个外设去初始化，可能导致某些电源使能被初始化，导致电源状态波动，从而死机，所以注释掉
+        // HAL_DeInit();
         //printf("4\n");
         // ==========================================
 

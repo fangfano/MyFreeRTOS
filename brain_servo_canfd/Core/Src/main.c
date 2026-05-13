@@ -78,6 +78,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
   SCB->VTOR = FLASH_BANK1_BASE | VECT_TAB_OFFSET;
+  __enable_irq(); // 因为bootloader里面跳转之前关闭了中断，所以这里要开启
   /* USER CODE END 1 */
 
   /* MPU Configuration--------------------------------------------------------*/

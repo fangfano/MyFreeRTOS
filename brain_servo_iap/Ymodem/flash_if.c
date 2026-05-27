@@ -33,6 +33,42 @@ static uint32_t GetSector(uint32_t Address);
 
 /* Private functions ---------------------------------------------------------*/
 
+/* ========================================================================= */
+/* 🌟 核心：在 RAM 中运行的擦除操作，配合外部的 __disable_irq() 杜绝死锁 */
+/* ========================================================================= */
+#if defined(__ICCARM__)
+__ramfunc
+#elif defined(__CC_ARM) || defined(__GNUC__)
+__attribute__((section(".RamFunc")))
+#endif
+static uint32_t FLASH_EraseSector_RAM(uint32_t Sector)
+{
+    /* 等待前一次 Flash 操作完成 */
+    while ((FLASH->SR1 & 0x01) != 0) {
+        IWDG1->KR = 0xAAAA;
+    }
+
+    uint32_t cr_val = FLASH->CR1;
+    cr_val &= ~(0x7U << 8);  /* 清除 SNB */
+    cr_val |= (Sector << 8); /* 设置要擦除的扇区 */
+    cr_val &= ~(0x3U << 4);  /* 清除 PSIZE */
+    cr_val |= (0x2U << 4);   /* PSIZE = 32-bit */
+    cr_val |= (0x1U << 2);   /* 开启 SER */
+    FLASH->CR1 = cr_val;
+
+    /* 启动擦除 */
+    FLASH->CR1 |= (0x1U << 7);
+
+    /* 等待擦除结束并疯狂喂狗 */
+    while ((FLASH->SR1 & 0x01) != 0) {
+        IWDG1->KR = 0xAAAA;
+    }
+
+    /* 擦除完成，关闭 SER */
+    FLASH->CR1 &= ~(0x1U << 2);
+    return FLASHIF_OK;
+}
+
 /**
   * @brief  Unlocks Flash for write access
   * @param  None
@@ -46,105 +82,96 @@ void FLASH_If_Init(void)
                          FLASH_FLAG_PGSERR | FLASH_FLAG_WRPERR);
 }
 
+
 /**
-  * @brief  This function does an erase of all user flash area
-  * @param  StartSector: start of user flash area
-  * @retval 0: user flash area successfully erased
-  *         1: error occurred
+  * @brief  安全擦除应用程序 Flash 区域
   */
-uint32_t FLASH_If_Erase(uint32_t StartSector)
+uint32_t FLASH_If_Erase(uint32_t StartSectorAddress)
 {
   uint32_t UserStartSector;
-  uint32_t SectorError;
-  FLASH_EraseInitTypeDef pEraseInit;
 
-  /* Unlock the Flash to enable the flash control register access *************/ 
   HAL_FLASH_Unlock(); 
   FLASH_If_Init();
-  
-  /* Get the sector where start the user flash area */
-  UserStartSector = GetSector(APPLICATION_ADDRESS);
-  
-  pEraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
-  pEraseInit.Sector = UserStartSector;
-//  pEraseInit.NbSectors = 8 - UserStartSector; // 原代码
-  pEraseInit.NbSectors = 1; // 🛑 核心修改1：每次只擦除 1 个扇区！保证狗
-  pEraseInit.VoltageRange = FLASH_VOLTAGE_RANGE_3;
-  
-  pEraseInit.Banks = FLASH_BANK_1;
   SCB_DisableICache();
+  
+  UserStartSector = GetSector(StartSectorAddress);
+  
+  // 🌟 核心防死机：关中断，进入纯净环境，防止任何中断跳回 Flash
+  __disable_irq();
 
-//  // 原代码
-//  if (HAL_FLASHEx_Erase(&pEraseInit, &SectorError) != HAL_OK)
-//  {
-//    /* Error occurred while sector erase */
-//    return (1);
-//  }
-  // 🛑 核心修改2：用 for 循环逐个扇区擦除，并在中间喂狗
-    for (uint32_t i = UserStartSector; i < 8; i++)
-    {
-        pEraseInit.Sector = i;
-        HAL_IWDG_Refresh(&hiwdg1); // 擦除前喂狗！
+  for (uint32_t i = UserStartSector; i < 8; i++)
+  {
+      FLASH_EraseSector_RAM(i);
+  }
 
-        if (HAL_FLASHEx_Erase(&pEraseInit, &SectorError) != HAL_OK)
-        {
-            SCB_EnableICache();
-            HAL_FLASH_Lock();
-            return (1); // 擦除失败
-        }
-    }
-
-
+  // 🌟 擦除完毕，恢复系统中断
+  __enable_irq();
 
   SCB_EnableICache();
-  
-  HAL_FLASH_Lock(); 
-  return (0);
+  HAL_FLASH_Lock();
+  return FLASHIF_OK;
 }
 
 /**
-  * @brief  This function writes a data buffer in flash (data are 32-bit aligned).
-  * @note   After writing data buffer, the flash content is checked.
-  * @param  FlashAddress: start address for writing data buffer
-  * @param  Data: pointer on data buffer
-  * @param  DataLength: length of data buffer (unit is 32-bit word)   
-  * @retval 0: Data successfully written to Flash memory
-  *         1: Error occurred while writing data in Flash memory
-  *         2: Written Data in flash memory is different from expected one
+  * @brief  安全擦除单个指定扇区
+  */
+uint32_t FLASH_If_Erase_Sector(uint32_t Sector)
+{
+  HAL_FLASH_Unlock();
+  FLASH_If_Init();
+  SCB_DisableICache();
+
+  // 🌟 核心防死机
+  __disable_irq();
+  FLASH_EraseSector_RAM(Sector);
+  __enable_irq();
+
+  SCB_EnableICache();
+  HAL_FLASH_Lock(); 
+  return FLASHIF_OK;
+}
+
+/**
+  * @brief  安全写入数据到 Flash
   */
 uint32_t FLASH_If_Write(uint32_t FlashAddress, uint32_t* Data ,uint32_t DataLength)
 {
   uint32_t i = 0;
- /* Unlock the Flash to enable the flash control register access *************/ 
+  HAL_StatusTypeDef write_status;
+
   HAL_FLASH_Unlock();
   SCB_DisableICache();
+
   for (i = 0; (i < DataLength) && (FlashAddress <= (USER_FLASH_END_ADDRESS-32)); i+=8)
   {
-	  HAL_IWDG_Refresh(&hiwdg1); // 🐶 核心修改3：写入数据时不断喂狗！
+    HAL_IWDG_Refresh(&hiwdg1); // 每写一次前喂狗
 
-    /* Device voltage range supposed to be [2.7V to 3.6V], the operation will
-       be done by word */ 
-    if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, FlashAddress, ((uint32_t)(Data+i))) == HAL_OK)
+    // 🌟 短暂关闭中断：虽然写入单行很快，但防止就在此刻被中断打断引起总线读取竞争
+    __disable_irq();
+    write_status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, FlashAddress, ((uint32_t)(Data+i)));
+    __enable_irq();
+
+    if (write_status == HAL_OK)
     {
-     /* Check the written value */
       if (*(uint32_t*)FlashAddress != *(uint32_t*)(Data+i))
       {
-        /* Flash content doesn't match SRAM content */
-        return(FLASHIF_WRITINGCTRL_ERROR);
+        SCB_EnableICache();
+        HAL_FLASH_Lock();
+        return FLASHIF_WRITINGCTRL_ERROR;
       }
-      /* Increment FLASH destination address */
       FlashAddress += 32;
     }
     else
     {
-      /* Error occurred while writing data in Flash memory */
-      return (FLASHIF_WRITING_ERROR);
+      SCB_EnableICache();
+      HAL_FLASH_Lock();
+      return FLASHIF_WRITING_ERROR;
     }
   }
+
   SCB_EnableICache();
   HAL_FLASH_Lock();
-
-  return (FLASHIF_OK);
+  return FLASHIF_OK;
 }
 
 /**
@@ -252,4 +279,129 @@ HAL_StatusTypeDef FLASH_If_WriteProtectionConfig(uint32_t modifier)
 /**
   * @}
   */
+
+BootInfo_t BOOT_Info_Read(void)
+{
+    BootInfo_t *p_flash_info = (BootInfo_t *)ADDR_BOOT_INFO;
+    BootInfo_t info;
+
+    info = *p_flash_info;
+
+    if (info.magic != BOOT_INFO_MAGIC ||
+        info.vector_table_offset != ((info.boot_state == BOOT_STATE_BANKA) ? ADDR_BANKA :
+                                     (info.boot_state == BOOT_STATE_BANKB) ? ADDR_BANKB : 0))
+    {
+        info.magic = 0;
+        info.boot_state = BOOT_STATE_NONE;
+        info.vector_table_offset = 0;
+    }
+
+    return info;
+}
+
+uint32_t BOOT_Info_Write(BootInfo_t *p_info)
+{
+    uint32_t result;
+    uint8_t write_buf[32];
+    uint32_t i;
+
+    p_info->magic = BOOT_INFO_MAGIC;
+    p_info->vector_table_offset = (p_info->boot_state == BOOT_STATE_BANKA) ? ADDR_BANKA :
+                                  (p_info->boot_state == BOOT_STATE_BANKB) ? ADDR_BANKB : 0;
+
+    for (i = 0; i < sizeof(BootInfo_t) && i < 32; i++)
+    {
+        write_buf[i] = ((uint8_t *)p_info)[i];
+    }
+    for (; i < 32; i++)
+    {
+        write_buf[i] = 0xFF;
+    }
+
+    result = FLASH_If_Erase_Sector(BOOT_INFO_SECTOR);
+    if (result != FLASHIF_OK)
+    {
+        return result;
+    }
+
+    return FLASH_If_Write(ADDR_BOOT_INFO, (uint32_t *)write_buf, 8);
+}
+
+uint32_t FLASH_If_Erase_Bank(BootState_t bank)
+{
+    uint32_t start_sector, end_sector;
+    uint32_t result;
+
+    if (bank == BOOT_STATE_BANKA)
+    {
+        start_sector = BANKA_START_SECTOR;
+        end_sector = BANKA_END_SECTOR;
+    }
+    else if (bank == BOOT_STATE_BANKB)
+    {
+        start_sector = BANKB_START_SECTOR;
+        end_sector = BANKB_END_SECTOR;
+    }
+    else
+    {
+        return FLASHIF_ERASEKO;
+    }
+
+    for (uint32_t s = start_sector; s <= end_sector; s++)
+    {
+        result = FLASH_If_Erase_Sector(s);
+        if (result != FLASHIF_OK)
+        {
+            return result;
+        }
+    }
+
+    return FLASHIF_OK;
+}
+
+static uint8_t IsAppValid(uint32_t app_addr)
+{
+    uint32_t sp = *(__IO uint32_t *)app_addr;
+    return ((sp & 0x2FF00000) == 0x20000000 || (sp & 0x2FF00000) == 0x24000000);
+}
+
+uint32_t BOOT_GetActiveAppAddress(void)
+{
+    BootInfo_t info = BOOT_Info_Read();
+
+    if (info.boot_state == BOOT_STATE_BANKA && IsAppValid(ADDR_BANKA))
+    {
+        return ADDR_BANKA;
+    }
+    else if (info.boot_state == BOOT_STATE_BANKB && IsAppValid(ADDR_BANKB))
+    {
+        return ADDR_BANKB;
+    }
+    else if (info.boot_state == BOOT_STATE_NONE)
+    {
+        if (IsAppValid(ADDR_BANKA)) return ADDR_BANKA;
+        if (IsAppValid(ADDR_BANKB)) return ADDR_BANKB;
+        return 0;
+    }
+
+    if (IsAppValid(ADDR_BANKA)) return ADDR_BANKA;
+    if (IsAppValid(ADDR_BANKB)) return ADDR_BANKB;
+    return 0;
+}
+
+BootState_t BOOT_GetInactiveBank(void)
+{
+    BootInfo_t info = BOOT_Info_Read();
+
+    if (info.boot_state == BOOT_STATE_BANKA)
+    {
+        return BOOT_STATE_BANKB;
+    }
+    else if (info.boot_state == BOOT_STATE_BANKB)
+    {
+        return BOOT_STATE_BANKA;
+    }
+
+    return BOOT_STATE_BANKA;
+}
 

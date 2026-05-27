@@ -58,6 +58,22 @@ void Int2Str(uint8_t *p_str, uint32_t intnum)
   }
 }
 
+void Int2Hex(uint8_t *p_str, uint32_t intnum)
+{
+  uint32_t i;
+  uint8_t digit;
+
+  for (i = 0; i < 8; i++)
+  {
+    digit = (intnum >> (28 - i * 4)) & 0xF;
+    if (digit < 10)
+      p_str[i] = digit + '0';
+    else
+      p_str[i] = digit - 10 + 'A';
+  }
+  p_str[8] = '\0';
+}
+
 /**
   * @brief  Convert a string to an integer
   * @param  p_inputstr: The string to be converted

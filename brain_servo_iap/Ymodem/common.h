@@ -47,6 +47,7 @@
 
 /* Exported functions ------------------------------------------------------- */
 void Int2Str(uint8_t *p_str, uint32_t intnum);
+void Int2Hex(uint8_t *p_str, uint32_t intnum);
 uint32_t Str2Int(uint8_t *inputstr, uint32_t *intnum);
 void Serial_PutString(uint8_t *p_string);
 HAL_StatusTypeDef Serial_PutByte(uint8_t param);

@@ -42,12 +42,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define VECT_TAB_OFFSET  0x00020200UL // 必须与 flash_if.h 中的起始地址对应
+#if defined(APP_BANK_A)
+  #define APP_START_ADDR 0x08060000U
+#elif defined(APP_BANK_B)
+  #define APP_START_ADDR 0x080A0000U
+#else
+  #error "Please define APP_BANK_A or APP_BANK_B in your build configuration!"
+#endif
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define APP_VERSION "1.0.1"
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -77,7 +83,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  SCB->VTOR = FLASH_BANK1_BASE | VECT_TAB_OFFSET;
+  SCB->VTOR = APP_START_ADDR;
   __enable_irq(); // 因为bootloader里面跳转之前关闭了中断，所以这里要开启
   /* USER CODE END 1 */
 

@@ -331,7 +331,7 @@ uint8_t CalcChecksum(const uint8_t *p_data, uint32_t size)
   * @param  p_size The size of the file.
   * @retval COM_StatusTypeDef result of reception/programming
   */
-COM_StatusTypeDef Ymodem_Receive ( uint32_t *p_size )
+COM_StatusTypeDef Ymodem_Receive ( uint32_t *p_size, uint32_t target_addr, uint32_t target_max_size )
 {
   uint32_t i, packet_length, session_done = 0, file_done, errors = 0, session_begin = 0, packets_received = 0;
   uint32_t flashdestination, ramsource, filesize;
@@ -339,8 +339,7 @@ COM_StatusTypeDef Ymodem_Receive ( uint32_t *p_size )
   uint8_t file_size[FILE_SIZE_LENGTH], tmp;
   COM_StatusTypeDef result = COM_OK;
 
-  /* Initialize flashdestination variable */
-  flashdestination = APPLICATION_ADDRESS;
+  flashdestination = target_addr;
 
   while ((session_done == 0) && (result == COM_OK))
   {
@@ -400,7 +399,7 @@ COM_StatusTypeDef Ymodem_Receive ( uint32_t *p_size )
 
                     /* Test the size of the image to be sent */
                     /* Image size is greater than Flash size */
-                    if (*p_size > (USER_FLASH_SIZE + 1))
+                    if (*p_size > (target_max_size + 1))
                     {
                       /* End session */
                       tmp = CA;
@@ -408,8 +407,8 @@ COM_StatusTypeDef Ymodem_Receive ( uint32_t *p_size )
                       HAL_UART_Transmit(&UartHandle, &tmp, 1, NAK_TIMEOUT);
                       result = COM_LIMIT;
                     }
-                    /* erase user application area */
-                    FLASH_If_Erase(APPLICATION_ADDRESS);
+                    BootState_t target_bank = (target_addr == ADDR_BANKA) ? BOOT_STATE_BANKA : BOOT_STATE_BANKB;
+                    FLASH_If_Erase_Bank(target_bank);
                     *p_size = filesize;
                     
                     Serial_PutByte(ACK);

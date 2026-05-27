@@ -90,7 +90,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -120,6 +119,8 @@ int main(void)
 		enter_iap = 1;
 	}
 
+	// 新增一个电机的启动，如果在app中调用，可能会死机
+//	HAL_GPIO_WritePin(SERVO_IO_GPIO_Port, SERVO_IO_Pin , GPIO_PIN_SET);
 //	while(1){ // 喂狗与生命状态测试
 //		HAL_IWDG_Refresh(&hiwdg1); // 必须在等待循环中喂狗
 //		life_count++;
@@ -139,7 +140,7 @@ int main(void)
 		uint8_t rx_data = 0;
 
 		// 开启 3 秒 (3000ms) 的等待窗口
-		while ((HAL_GetTick() - tickstart) < 3000) {
+		while ((HAL_GetTick() - tickstart) < 5000) {
 
 			// 极其重要：等待期间必须持续喂狗，否则单片机会在此处不断复位！
 			HAL_IWDG_Refresh(&hiwdg1);
@@ -161,41 +162,22 @@ int main(void)
 		FLASH_If_Init(); // 解锁 Flash 权限
 		Main_Menu();     // 进入 Ymodem 菜单循环
 	}
-	// 4. 尝试跳转到 APP
+	// 4. 尝试跳转到 APP（由 BootInfo 决定目标 Bank）
 	else {
-		// 直接引入你的 APP 起始地址宏 (在 flash_if.h 里定义的那个)
-		// 如果没 include，就直接写死 uint32_t app_addr = 0x08020000;
-		uint32_t app_addr = APPLICATION_ADDRESS;
+		uint32_t app_addr = BOOT_GetActiveAppAddress();
 
-		// 工业标准做法：检查 APP 地址的第一个字（栈顶指针）是否指向 RAM 区域
-		// STM32H7 的 RAM 通常在 0x20000000 (DTCM) 或 0x24000000 (AXI SRAM)
-		uint32_t app_stack_ptr = *(__IO uint32_t*)app_addr;
-
-		if ((app_stack_ptr & 0x2FF00000) == 0x20000000 ||
-			(app_stack_ptr & 0x2FF00000) == 0x24000000)
+		if (app_addr != 0)
 		{
-			// ================= 新增：打印当前版本号 =================
-			// 根据之前的定义，SN 码存放在 0x08020000
-			char* current_sn = (char*)0x08020000;
-			// 检查第一个字节是不是 0xFF (如果是全0xFF说明没写过SN) 或空字符
-			if ((uint8_t)current_sn[0] != 0xFF && current_sn[0] != '\0') {
-				printf("[BOOT] Current APP Version: %s\r\n", current_sn);
-			} else {
-				printf("[BOOT] Current APP Version: [Unknown/Empty]\r\n");
-			}
-			// ========================================================
-
-			printf("[BOOT] Legal APP found (Valid SP: 0x%08X), jumping...\r\n", app_stack_ptr);
-			HAL_Delay(50); // 稍微延时一下让串口把字打印完
-			Jump_To_App(); // 执行跳转
+			// printf("[BOOT] Active app at 0x%08X, jumping...\r\n", app_addr);
+			HAL_Delay(50);
+			Jump_To_App();
 		}
 		else {
-			// 如果读出来的栈顶指针是 0xFFFFFFFF (空Flash)，或者其他乱七八糟的数字，说明没程序
-			printf("[BOOT] Error: No legal APP found at 0x%08X!\r\n", app_addr);
-			printf("[BOOT] Read Stack Pointer: 0x%08X\r\n", app_stack_ptr);
+			printf("[BOOT] No valid APP found in any bank!\r\n");
+			printf("[BOOT] BankA SP: 0x%08X, BankB SP: 0x%08X\r\n",
+					*(__IO uint32_t*)ADDR_BANKA, *(__IO uint32_t*)ADDR_BANKB);
 			HAL_Delay(2000);
 
-			// 如果没有 APP，强制进入 IAP 菜单以便用户下载固件
 			FLASH_If_Init();
 			Main_Menu();
 		}
@@ -212,7 +194,6 @@ int main(void)
 		printf("run in boot while(1)\r\n");
     printf("there is no legal APP\r\n");
     HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
-    HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 	  HAL_Delay(2000);
   }
   /* USER CODE END 3 */
@@ -281,8 +262,20 @@ void SystemClock_Config(void)
 
 void Jump_To_App(void)
 {
-    uint32_t app_addr = APPLICATION_ADDRESS;
+    uint32_t app_addr = BOOT_GetActiveAppAddress();
+		printf("[BOOT] Active app at 0x%08X, jumping...\r\n", app_addr);
+
+    if (app_addr == 0)
+    {
+        printf("Error: No active application!\r\n");
+        return;
+    }
+
     uint32_t app_stack_ptr = *(__IO uint32_t*)app_addr;
+    uint32_t app_reset_vec = *(__IO uint32_t*)(app_addr + 4);
+
+    printf("[BOOT] Jump target: 0x%08X\r\n", app_addr);
+    printf("[BOOT] SP: 0x%08X, Reset: 0x%08X\r\n", app_stack_ptr, app_reset_vec);
 
     if (((app_stack_ptr & 0x2FF00000) == 0x20000000) ||
         ((app_stack_ptr & 0x2FF00000) == 0x24000000))
@@ -290,7 +283,7 @@ void Jump_To_App(void)
         // 1. 关闭全局中断
         __disable_irq();
 
-        printf("1");
+        printf("1 ");
 
         // 临走前狠狠喂一次狗
         extern IWDG_HandleTypeDef hiwdg1;
@@ -304,7 +297,7 @@ void Jump_To_App(void)
 		extern UART_HandleTypeDef huart1; // 根据你代码里的名字，可能是 huart1
 		HAL_UART_Abort(&huart1);
 
-        printf("2");
+        printf("2 ");
 		// 强制插入同步屏障，确保前面的关闭动作在硬件层面上彻底完成
 		// 如果有隐藏的 BusFault，也会在这里提前引爆，而不会死在 Cache 函数里
 		__DSB();
@@ -318,7 +311,7 @@ void Jump_To_App(void)
         SCB_InvalidateDCache();
         SCB->CCR &= ~(uint32_t)SCB_CCR_DC_Msk; // 强制从硬件位关闭 D-Cache
 
-        printf("3");
+        printf("3 ");
 		__DSB();
 		__ISB();
 
@@ -327,8 +320,8 @@ void Jump_To_App(void)
 
         // 4. 【最后】反初始化外设
         // 现在 Cache 已经关了，怎么关外设时钟都不会触发总线错误了
-        // 下面这个外设去初始化，可能导致某些电源使能被初始化，导致电源状态波动，从而死机，所以注释掉
-        // HAL_DeInit();
+        // 这个地方注释掉，避免电源波动
+//        HAL_DeInit();
         //printf("4\n");
         // ==========================================
 

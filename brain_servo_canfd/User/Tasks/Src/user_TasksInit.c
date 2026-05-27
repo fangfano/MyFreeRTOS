@@ -237,7 +237,6 @@ void TaskTickHook(void)
 		  HAL_IWDG_Refresh(&hiwdg1);
 	  }
 
-
 }
 
 

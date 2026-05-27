@@ -1,4 +1,0 @@
-../Ymodem/menu.c:57:13:Serial_ReceiveString	11
-../Ymodem/menu.c:98:6:SerialDownload	15
-../Ymodem/menu.c:200:6:SerialUpload	4
-../Ymodem/menu.c:235:6:Main_Menu	10

@@ -1,2 +1,0 @@
-../User/Tasks/Src/user_TasksInit.c:123:6:User_Tasks_Init	16	static
-../User/Tasks/Src/user_TasksInit.c:184:6:TaskTickHook	8	static

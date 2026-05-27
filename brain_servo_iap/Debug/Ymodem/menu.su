@@ -1,4 +1,0 @@
-../Ymodem/menu.c:57:13:Serial_ReceiveString	24	static
-../Ymodem/menu.c:98:6:SerialDownload	96	static
-../Ymodem/menu.c:200:6:SerialUpload	16	static
-../Ymodem/menu.c:235:6:Main_Menu	16	static,ignoring_inline_asm

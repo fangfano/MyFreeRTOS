@@ -1,10 +1,8 @@
 # STM32 Build Output
-brain_servo_canfd/Debug/
-brain_servo_iap/Debug/
+MyAPP/Debug/
+MyIAP/Debug/
 
 # Bank copies
-brain_servo_canfd/BankA/
-brain_servo_canfd/BankB/
+MyAPP/BankA/
+MyAPP/BankB/
 
-# Target output
-Target/

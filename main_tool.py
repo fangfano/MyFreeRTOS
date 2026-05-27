@@ -443,7 +443,7 @@ class DebuggerTab:
     def write_sn(self):
         sn_value = self.entry_sn.get().strip()
         if sn_value:
-            self.send_data(f"SN:{sn_value}")
+            self.send_data(f"SN={sn_value}")
         else:
             messagebox.showwarning("提示", "请输入要写入的SN码")
 

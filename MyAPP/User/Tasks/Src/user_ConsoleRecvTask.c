@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "rtc.h"
+#include "sn_manager.h"
 
 static uint16_t servo_pulse[SERVO_COUNT] = {1500, 1500, 1500, 1500};
 
@@ -32,33 +33,38 @@ uint16_t Servo_GetPulse(uint8_t ch)
     return servo_pulse[ch - 1];
 }
 
+// 处理串口命令行信息
 static void ParseCommand(uint8_t *data, uint16_t len)
 {
-    // ==========================================
-    // 1. 优先拦截 OTA 升级命令 (假设发送的是 "OTA")
-    // ==========================================
     if (len >= 3 && strncmp((char *)data, "OTA", 3) == 0) {
         printf("\r\n[APP] OTA trigger received! Rebooting to Bootloader...\r\n");
-        osDelay(100); // 稍微延时，等待串口把这句话打印完 (FreeRTOS中用osDelay)
+        osDelay(100);
 
-        // 解锁备份域权限
         HAL_PWR_EnableBkUpAccess();
 
-        // 往信箱里写入我们在 Bootloader 约定的暗号：0x5A5A
-        // 注意：APP工程的CubeMX里也必须开启 RTC 外设，否则没有 hrtc
         extern RTC_HandleTypeDef hrtc;
         HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, 0x5A5A);
 
-        // 斩立决：执行系统软复位！
-        // 复位后，单片机会纯净地从 Bootloader 启动，读取暗号并停留在 IAP 界面
         NVIC_SystemReset();
 
-        while(1); // 代码永远不会跑到这里
+        while(1); // 按道理来说，永远都无法到这里
     }
 
-    // ==========================================
-    // 2. 正常的舵机控制命令解析 (保留你原有的逻辑)
-    // ==========================================
+    if (len >= 3 && strncmp((char *)data, "SN=", 3) == 0) {
+        SN_ParseCommand(data, len);
+        return;
+    }
+
+    if (len >= 6 && strncmp((char *)data, "SNREAD", 6) == 0) {
+        SN_Print();
+        return;
+    }
+
+    if (len >= 11 && strncmp((char *)data, "VERSIONREAD", 11) == 0) {
+        VERSION_Print();
+        return;
+    }
+
     if (len < 4 || data[0] != 'S') return;
     
     uint8_t ch = data[1] - '0';
